@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="प्रहरी मेस" />
+  <title>प्रहरी मेस - E Coy, 120 Bn BSF</title>
+
+  <!-- Dynamic PWA Manifest, Apple Touch Icon & Favicon -->
+  <link id="dynamic-manifest" rel="manifest" href="" />
+  <link id="apple-touch-icon" rel="apple-touch-icon" href="" />
+  <link id="dynamic-favicon" rel="icon" type="image/png" href="" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- html2canvas & jsPDF for Full-Page Edge-to-Edge A4 Landscape Print & PDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <!-- Official Bilingual Typography (Inter + Noto Sans Devanagari) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=Noto+Sans+Devanagari:wght@600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', 'Noto Sans Devanagari', sans-serif;
+      background-color: #f1f5f9;
+      color: #003399;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .hindi-font {
+      font-family: 'Noto Sans Devanagari', 'Inter', sans-serif;
+    }
+
+    /* Official Color Tokens */
+    .writing-blue {
+      color: #003399 !important;
+    }
+    .heading-red,
+    .total-red,
+    .th-red {
+      color: #cc0000 !important;
+    }
+
+    /* Main Title with Generous Line Height (1.42) & Top Padding (10px) so Devanagari Matras ('े', 'ी') Never Clip */
+    .prahari-main-title {
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.42;
+      padding-top: 10px;
+      padding-bottom: 2px;
+      font-weight: 900;
+      color: #cc0000 !important;
+    }
+
+    /* Custom Scrollbar for Mobile Register Table */
+    .register-scroll::-webkit-scrollbar {
+      height: 8px;
+    }
+    .register-scroll::-webkit-scrollbar-track {
+      background: #e2e8f0;
+      border-radius: 4px;
+    }
+    .register-scroll::-webkit-scrollbar-thumb {
+      background: #003399;
+      border-radius: 4px;
+    }
+
+    /* Hide Number Spinners */
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+
+    /* Native Browser A4 Landscape Print Styles */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 3mm;
+      }
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-sizing: border-box !important;
+      }
+      html, body {
+        background: #ffffff !important;
+        color: #003399 !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .logo-slot.is-empty {
+        visibility: hidden !important;
+        border: none !important;
+      }
+      .logo-slot {
+        border: none !important;
+        background: transparent !important;
+      }
+      #register-sheet {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 2px !important;
+        margin: 0 auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        background: #ffffff !important;
+      }
+      .prahari-main-title {
+        font-size: 56px !important;
+        line-height: 1.42 !important;
+        padding-top: 10px !important;
+      }
+      #table-scroll-wrapper {
+        overflow: visible !important;
+        width: 100% !important;
+      }
+      table.prahari-table {
+        width: 100% !important;
+        table-layout: fixed !important;
+        border-collapse: collapse !important;
+        border: 1.5px solid #003399 !important;
+        background: #ffffff !important;
+      }
+      table.prahari-table th,
+      table.prahari-table td {
+        border: 1.5px solid #003399 !important;
+        background: #ffffff !important;
+        padding: 4px 3px !important;
+        min-width: 0 !important;
+        vertical-align: middle !important;
+      }
+      table.prahari-table input,
+      .meta-input {
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+      }
+      .writing-blue {
+        color: #003399 !important;
+      }
+      .heading-red,
+      .total-red,
+      .th-red {
+        color: #cc0000 !important;
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+  <!-- Hidden File Input for Dedicated Home Screen App Icon Upload -->
+  <input type="file" id="app-icon-input" accept="image/*" class="hidden" onchange="handleAppIconUpload(this)" />
+
+  <!-- Top Minimal App Control Bar (Hidden on Print & PDF) -->
+  <header class="no-print sticky top-0 z-40 bg-[#002366] text-white shadow-md border-b border-blue-950">
+    <div class="max-w-[1440px] mx-auto px-3 py-2.5 flex flex-wrap items-center justify-between gap-2">
+      <!-- App Identity & Custom App Icon Preview -->
+      <div class="flex items-center gap-2.5">
+        <div id="topbar-icon-preview" onclick="document.getElementById('app-icon-input').click()" title="Click to change Home Screen App Icon"
+          class="w-9 h-9 rounded-xl bg-white text-[#CC0000] font-black text-xs flex items-center justify-center shadow hindi-font flex-shrink-0 border border-blue-300 overflow-hidden cursor-pointer">
+          मेस
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="font-extrabold text-sm sm:text-base tracking-tight hindi-font">प्रहरी मेस</h1>
+            <span id="save-badge" class="text-[10px] bg-blue-900 text-blue-100 px-2 py-0.5 rounded-full border border-blue-700">Auto-Saved</span>
+          </div>
+          <p class="text-[11px] text-blue-200">E Coy, 120 Bn BSF • Monthly Ration Summary</p>
+        </div>
+      </div>
+
+      <!-- Primary Action Buttons -->
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <button onclick="document.getElementById('app-icon-input').click()" title="Set Custom Home Screen App Icon"
+          class="flex items-center gap-1.5 bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-extrabold text-xs px-3 py-2 rounded-lg shadow transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <span>App Icon</span>
+        </button>
+
+        <button id="install-app-btn" onclick="triggerInstallApp()" class="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 font-extrabold text-xs px-3 py-2 rounded-lg shadow transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          <span>Install App</span>
+        </button>
+
+        <button onclick="openCarryForwardModal()" class="flex items-center gap-1 bg-blue-700 hover:bg-blue-600 active:scale-95 text-white font-bold text-xs px-3 py-2 rounded-lg border border-blue-500 shadow transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5l7 7-7 7M5 5l7 7-7 7"/></svg>
+          <span>Next Month</span>
+        </button>
+
+        <button onclick="addNewRationRow()" class="flex items-center gap-1 bg-blue-700 hover:bg-blue-600 active:scale-95 text-white font-bold text-xs px-3 py-2 rounded-lg border border-blue-500 shadow transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+          <span>+ Add Item</span>
+        </button>
+
+        <button id="print-pdf-btn" onclick="exportA4LandscapePDFAndPrint()" class="flex items-center gap-1.5 bg-[#CC0000] hover:bg-red-700 active:scale-95 text-white font-extrabold text-xs px-3.5 py-2 rounded-lg shadow transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+          <span>Print / PDF</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Workspace -->
+  <main class="flex-1 max-w-[1440px] w-full mx-auto px-2 sm:px-4 py-3 sm:py-4">
+
+    <!-- Screen Helper Strip (Excluded from Print/PDF) -->
+    <div class="no-print mb-2.5 flex flex-wrap items-center justify-between gap-2 bg-white px-3 py-2 rounded-xl border border-slate-200 text-xs writing-blue">
+      <span class="font-semibold">
+        Home Screen आइकन बदलने के लिए पहले <strong class="heading-red">App Icon</strong> (या <strong>+ Left Logo</strong>) से अपना लोगो चुनें, फिर <strong class="text-emerald-700">Install App</strong> दबाएं।
+      </span>
+      <button onclick="openResetModal()" class="text-xs font-bold text-slate-600 hover:text-red-700 px-2.5 py-1 rounded hover:bg-slate-100 transition">
+        Reset Sample Data
+      </button>
+    </div>
+
+    <!-- ======================================================================= -->
+    <!-- OFFICIAL REGISTER SHEET (PURE WHITE BACKGROUND #FFFFFF, ZERO CLUTTER)   -->
+    <!-- ======================================================================= -->
+    <div id="register-sheet" class="bg-white rounded-xl shadow-sm border border-[#003399] p-3 sm:p-5">
+
+      <!-- 1. CLEAN OFFICIAL WHITE HEADER (NO LINE ABOVE 'प्रहरी मेस', DUAL CUSTOM LOGOS) -->
+      <div class="mb-3 bg-white">
+        <!-- 3-Balanced-Zone Top Row: Left Logo (90x90) | Center Title Block | Right Logo (90x90) -->
+        <div id="header-top-row" class="flex items-center justify-between gap-2 sm:gap-4 pb-1 bg-white">
+
+          <!-- Left Custom Logo Uploader Box (90px x 90px) -->
+          <div class="flex-shrink-0 flex items-center justify-start">
+            <input type="file" id="left-logo-input" accept="image/*" class="hidden" onchange="handleLogoUpload('left', this)" />
+            <div id="left-logo-box" onclick="document.getElementById('left-logo-input').click()"
+              title="Click to upload Left Logo"
+              style="width: 90px; height: 90px;"
+              class="logo-slot is-empty group relative rounded-lg border border-dashed border-[#003399]/60 hover:border-[#CC0000] bg-white flex flex-col items-center justify-center cursor-pointer transition overflow-hidden">
+              <img id="left-logo-img" src="" alt="Left Logo" class="hidden w-full h-full object-contain p-0.5" />
+              <div id="left-logo-placeholder" class="no-print flex flex-col items-center justify-center text-center px-1 writing-blue">
+                <svg class="w-4 h-4 mb-0.5 opacity-80" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="text-[10px] font-extrabold leading-tight">+ Left Logo</span>
+              </div>
+              <button id="left-logo-remove" type="button" onclick="removeCustomLogo(event, 'left')" title="Remove Left Logo"
+                class="no-print hidden group-hover:flex items-center justify-center absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-[#CC0000] text-white text-xs font-black shadow hover:bg-red-800">
+                ×
+              </button>
+            </div>
+          </div>
+
+          <!-- Center Title Block -->
+          <div class="flex-1 text-center px-1 bg-white">
+            <h1 id="main-prahari-title" class="prahari-main-title hindi-font tracking-tight">
+              प्रहरी मेस
+            </h1>
+            <div class="mt-0.5 bg-white">
+              <input id="meta-bsf-line" type="text"
+                value="सीमा सुरक्षा बल / BORDER SECURITY FORCE"
+                oninput="updateMeta('bsfLine', this.value)"
+                aria-label="Force Title"
+                class="meta-input w-full text-center font-extrabold text-[17px] sm:text-[22px] tracking-wide uppercase heading-red bg-white focus:outline-none focus:underline" />
+            </div>
+          </div>
+
+          <!-- Right Custom Logo Uploader Box (90px x 90px) -->
+          <div class="flex-shrink-0 flex items-center justify-end">
+            <input type="file" id="right-logo-input" accept="image/*" class="hidden" onchange="handleLogoUpload('right', this)" />
+            <div id="right-logo-box" onclick="document.getElementById('right-logo-input').click()"
+              title="Click to upload Right Logo"
+              style="width: 90px; height: 90px;"
+              class="logo-slot is-empty group relative rounded-lg border border-dashed border-[#003399]/60 hover:border-[#CC0000] bg-white flex flex-col items-center justify-center cursor-pointer transition overflow-hidden">
+              <img id="right-logo-img" src="" alt="Right Logo" class="hidden w-full h-full object-contain p-0.5" />
+              <div id="right-logo-placeholder" class="no-print flex flex-col items-center justify-center text-center px-1 writing-blue">
+                <svg class="w-4 h-4 mb-0.5 opacity-80" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                <span class="text-[10px] font-extrabold leading-tight">+ Right Logo</span>
+              </div>
+              <button id="right-logo-remove" type="button" onclick="removeCustomLogo(event, 'right')" title="Remove Right Logo"
+                class="no-print hidden group-hover:flex items-center justify-center absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-[#CC0000] text-white text-xs font-black shadow hover:bg-red-800">
+                ×
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Mess Summary Banner (26px ExtraBold Red, Editable) -->
+        <div class="bg-white py-1 text-center">
+          <input id="meta-banner" type="text"
+            value="MESS SUMMARY OF MONTH 26.11.26 TO 25.12.26 E COY 120 BN BSF"
+            oninput="updateMeta('banner', this.value)"
+            aria-label="Mess Summary Banner"
+            class="meta-input w-full text-center font-black text-[18px] sm:text-[26px] tracking-wide uppercase heading-red bg-white focus:outline-none focus:underline" />
+        </div>
+
+        <!-- 3-Column Metadata Line (18px ExtraBold Red) -->
+        <div id="header-meta-grid" class="grid grid-cols-1 sm:grid-cols-3 gap-1.5 sm:gap-2 pt-1 pb-2 bg-white text-[16px] sm:text-[18px]">
+          <div class="flex items-center justify-start gap-1.5 bg-white">
+            <span class="hindi-font font-extrabold heading-red whitespace-nowrap">अवधि (Period):</span>
+            <input id="meta-period" type="text"
+              value="26.11.2026 से 25.12.2026"
+              oninput="updateMeta('period', this.value)"
+              class="meta-input font-extrabold heading-red bg-white w-full focus:outline-none focus:underline" />
+          </div>
+
+          <div class="flex items-center justify-start sm:justify-center gap-1.5 bg-white">
+            <span class="hindi-font font-extrabold heading-red whitespace-nowrap">कंपनी/बटालियन:</span>
+            <input id="meta-unit" type="text"
+              value="E Coy, 120 Bn BSF"
+              oninput="updateMeta('unit', this.value)"
+              class="meta-input font-extrabold heading-red bg-white w-44 sm:w-52 sm:text-center focus:outline-none focus:underline" />
+          </div>
+
+          <div class="flex items-center justify-start sm:justify-end gap-1.5 bg-white">
+            <span class="hindi-font font-extrabold heading-red whitespace-nowrap">स्थान (Location):</span>
+            <input id="meta-location" type="text"
+              value="Coy HQ"
+              oninput="updateMeta('location', this.value)"
+              class="meta-input font-extrabold heading-red bg-white w-28 sm:w-32 text-left sm:text-right focus:outline-none focus:underline" />
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 17-COLUMN REGISTER TABLE (EXTRA-BOLD RED HEADERS, ROYAL BLUE DATA, RED TOTALS) -->
+      <div id="table-scroll-wrapper" class="register-scroll overflow-x-auto bg-white">
+        <table id="prahari-register-table" class="prahari-table w-full border-collapse border-[1.5px] border-[#003399] text-[13px] writing-blue bg-white">
+          <thead>
+            <!-- ROW 1: GROUP HEADINGS IN EXTRA-BOLD RED (#CC0000) -->
+            <tr class="font-black text-center th-red bg-white">
+              <th rowspan="2" data-th-role="r1-sl" class="border-[1.5px] border-[#003399] px-1.5 py-2.5 min-w-[60px] text-[14.5px] font-black th-red bg-white align-middle leading-tight">Sl. No.</th>
+              <th rowspan="2" data-th-role="r1-part" class="border-[1.5px] border-[#003399] px-2.5 py-2.5 min-w-[195px] text-left text-[15.5px] font-black th-red bg-white align-middle">Particular</th>
+              <th rowspan="2" data-th-role="r1-au" class="border-[1.5px] border-[#003399] px-1.5 py-2.5 min-w-[54px] text-[14.5px] font-black th-red bg-white align-middle">A/U</th>
+              <th colspan="3" data-th-role="r1-group" class="border-[1.5px] border-[#003399] px-1.5 py-2 text-[14.5px] font-black th-red bg-white align-middle">Last Month Balance</th>
+              <th colspan="3" data-th-role="r1-group" class="border-[1.5px] border-[#003399] px-1.5 py-2 text-[14.5px] font-black th-red bg-white align-middle">Received Ration</th>
+              <th colspan="2" data-th-role="r1-group" class="border-[1.5px] border-[#003399] px-1.5 py-2 text-[14.5px] font-black th-red bg-white align-middle">Grand Total</th>
+              <th colspan="3" data-th-role="r1-group" class="border-[1.5px] border-[#003399] px-1.5 py-2 text-[14.5px] font-black th-red bg-white align-middle">Consume Ration</th>
+              <th colspan="3" data-th-role="r1-group" class="border-[1.5px] border-[#003399] px-1.5 py-2 text-[14.5px] font-black th-red bg-white align-middle">Next Month Balance</th>
+              <th rowspan="2" class="no-print border-[1.5px] border-[#003399] px-1 py-2 w-11 text-[13.5px] font-black th-red bg-white align-middle">Del</th>
+            </tr>
+            <!-- ROW 2: SUB-HEADINGS (QTY, RATE, AMT) IN EXTRA-BOLD RED (#CC0000) -->
+            <tr class="font-black text-center text-[13.5px] th-red bg-white">
+              <!-- Last Month Balance -->
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[60px] text-[13.5px] font-black th-red bg-white align-middle">Qty</th>
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[58px] text-[13.5px] font-black th-red bg-white align-middle">Rate</th>
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[78px] text-[13.5px] font-black th-red bg-white align-middle">Amt</th>
+              <!-- Received Ration -->
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[60px] text-[13.5px] font-black th-red bg-white align-middle">Qty</th>
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[58px] text-[13.5px] font-black th-red bg-white align-middle">Rate</th>
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[78px] text-[13.5px] font-black th-red bg-white align-middle">Amt</th>
+              <!-- Grand Total -->
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[64px] text-[13.5px] font-black th-red bg-white align-middle">Qty</th>
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[82px] text-[13.5px] font-black th-red bg-white align-middle">Amt</th>
+              <!-- Consume Ration -->
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[60px] text-[13.5px] font-black th-red bg-white align-middle">Qty</th>
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[58px] text-[13.5px] font-black th-red bg-white align-middle">Rate</th>
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[78px] text-[13.5px] font-black th-red bg-white align-middle">Amt</th>
+              <!-- Next Month Balance -->
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[64px] text-[13.5px] font-black th-red bg-white align-middle">Qty</th>
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[58px] text-[13.5px] font-black th-red bg-white align-middle">Rate</th>
+              <th data-th-role="r2-sub" class="border-[1.5px] border-[#003399] px-1 py-2 min-w-[82px] text-[13.5px] font-black th-red bg-white align-middle">Amt</th>
+            </tr>
+          </thead>
+
+          <tbody id="ration-tbody" class="bg-white">
+            <!-- Dynamic Ration Rows Rendered Here -->
+          </tbody>
+
+          <tfoot id="ration-tfoot" class="bg-white">
+            <!-- Dynamic TOTAL Row Rendered Here -->
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- 3. MONTHLY SUMMARY (1 TO 6) BOX (ROYAL BLUE LABELS, BOLD RED AMOUNTS) -->
+      <div class="mt-4 bg-white">
+        <table id="monthly-summary-table" class="w-full border-collapse border-[1.5px] border-[#003399] text-[13.5px] sm:text-sm writing-blue bg-white">
+          <tbody>
+            <tr>
+              <td class="border-[1.5px] border-[#003399] px-3 py-1.5 font-bold writing-blue bg-white w-[78%]">1. Last month Balance</td>
+              <td id="sum-1-last" class="border-[1.5px] border-[#003399] px-3 py-1.5 text-right font-extrabold total-red bg-white w-[22%]">0.00</td>
+            </tr>
+            <tr>
+              <td class="border-[1.5px] border-[#003399] px-3 py-1.5 font-bold writing-blue bg-white">2. Received ration in this month</td>
+              <td id="sum-2-rec" class="border-[1.5px] border-[#003399] px-3 py-1.5 text-right font-extrabold total-red bg-white">0.00</td>
+            </tr>
+            <tr>
+              <td class="border-[1.5px] border-[#003399] px-3 py-1.5 font-bold writing-blue bg-white">3. Grand Total</td>
+              <td id="sum-3-gt" class="border-[1.5px] border-[#003399] px-3 py-1.5 text-right font-extrabold total-red bg-white">0.00</td>
+            </tr>
+            <tr>
+              <td class="border-[1.5px] border-[#003399] px-3 py-1.5 font-bold writing-blue bg-white">4. Consume ration in this month</td>
+              <td id="sum-4-exp" class="border-[1.5px] border-[#003399] px-3 py-1.5 text-right font-extrabold total-red bg-white">0.00</td>
+            </tr>
+            <tr>
+              <td class="border-[1.5px] border-[#003399] px-3 py-1.5 font-bold writing-blue bg-white">5. Next month balance</td>
+              <td id="sum-5-next" class="border-[1.5px] border-[#003399] px-3 py-1.5 text-right font-extrabold total-red bg-white">0.00</td>
+            </tr>
+            <tr>
+              <td class="border-[1.5px] border-[#003399] px-3 py-1.5 font-black writing-blue bg-white">6. Grand Total</td>
+              <td id="sum-6-final" class="border-[1.5px] border-[#003399] px-3 py-1.5 text-right font-black total-red bg-white">0.00</td>
+            </tr>
+          </tbody>
+        </table>
+        <div id="monthly-summary-heading" class="text-center font-black text-sm sm:text-base tracking-wider uppercase heading-red mt-1.5 bg-white">
+          MONTHLY SUMMARY
+        </div>
+      </div>
+
+      <!-- 4. THREE OFFICIAL SIGNATURES FOOTER (ROYAL BLUE #003399) -->
+      <div class="mt-8 pt-6 pb-2 bg-white">
+        <div id="signatures-grid" class="grid grid-cols-3 gap-4 sm:gap-8 text-center">
+          <div class="flex flex-col items-center">
+            <div class="w-full max-w-[230px] border-t-2 border-[#003399] pt-1.5">
+              <div class="font-extrabold text-xs sm:text-[14px] writing-blue">
+                Sig of Mess Commander
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <div class="w-full max-w-[230px] border-t-2 border-[#003399] pt-1.5">
+              <div class="font-extrabold text-xs sm:text-[14px] writing-blue">
+                Sig of Coy 2IC
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-col items-center">
+            <div class="w-full max-w-[230px] border-t-2 border-[#003399] pt-1.5">
+              <div class="font-extrabold text-xs sm:text-[14px] writing-blue">
+                Sig of Coy Commander
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Floating Toast Notification -->
+  <div id="toast" class="no-print fixed bottom-4 left-1/2 -translate-x-1/2 z-50 hidden bg-[#002366] text-white text-xs sm:text-sm font-semibold px-4 py-2.5 rounded-full shadow-xl border border-blue-400">
+    Saved!
+  </div>
+
+  <!-- PDF Preview Modal (Fallback if mobile popup blocker blocks new window) -->
+  <div id="pdf-preview-modal" class="no-print fixed inset-0 z-50 hidden bg-black/75 backdrop-blur-xs flex items-center justify-center p-3">
+    <div class="bg-white rounded-2xl max-w-4xl w-full p-4 shadow-2xl border border-slate-200 flex flex-col max-h-[92vh]">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-2.5">
+        <h3 class="font-extrabold text-sm sm:text-base heading-red hindi-font">प्रहरी मेस — A4 Landscape Print / PDF Ready</h3>
+        <button onclick="closeModal('pdf-preview-modal')" class="text-slate-500 hover:text-slate-900 px-2 py-1 font-bold text-base">✕</button>
+      </div>
+      <div class="my-3 overflow-auto flex-1 bg-slate-100 rounded-xl p-2 flex items-center justify-center">
+        <img id="pdf-preview-image" src="" alt="A4 Landscape Sheet Preview" class="max-w-full h-auto border border-slate-300 shadow bg-white" />
+      </div>
+      <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-slate-200">
+        <button onclick="closeModal('pdf-preview-modal')" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200">Close</button>
+        <a id="pdf-direct-download-link" href="#" download="Prahari_Mess_Summary.pdf" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#003399] text-white hover:bg-blue-800">Download PDF</a>
+        <button onclick="window.print()" class="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#CC0000] text-white hover:bg-red-700">Native Print</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Home Screen Install Guide Modal -->
+  <div id="install-modal" class="no-print fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 text-slate-900">
+      <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+        <h3 class="font-extrabold text-base hindi-font heading-red">प्रहरी मेस — Home Screen पर Install करें</h3>
+        <button onclick="closeModal('install-modal')" class="text-slate-400 hover:text-slate-700 p-1 font-bold">✕</button>
+      </div>
+      <div class="mt-4 space-y-3 text-xs sm:text-sm text-slate-700">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+          <p class="font-bold text-amber-950 mb-1">अपना लोगो Home Screen आइकन बनाने के लिए:</p>
+          <p class="text-amber-900 text-xs">पहले ऊपर <strong>App Icon</strong> बटन से अपनी गैलरी का लोगो चुनें, फिर नीचे दिए तरीके से Install करें।</p>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
+          <p class="font-bold text-blue-950 mb-1">Android (Chrome Browser):</p>
+          <ol class="list-decimal list-inside space-y-1 text-blue-900">
+            <li>ऊपर दाईं ओर <strong>3 Dots (⋮)</strong> पर टैप करें।</li>
+            <li><strong>"Install app"</strong> या <strong>"Add to Home screen"</strong> चुनें।</li>
+            <li><strong>Install</strong> पर क्लिक करें।</li>
+          </ol>
+        </div>
+        <div class="bg-slate-50 border border-slate-200 rounded-xl p-3">
+          <p class="font-bold text-slate-900 mb-1">iPhone / iPad (Safari Browser):</p>
+          <ol class="list-decimal list-inside space-y-1 text-slate-800">
+            <li>नीचे <strong>Share आइकन (⬆️)</strong> पर टैप करें।</li>
+            <li><strong>"Add to Home Screen"</strong> चुनें और <strong>Add</strong> करें।</li>
+          </ol>
+        </div>
+      </div>
+      <div class="mt-5 flex justify-end">
+        <button onclick="closeModal('install-modal')" class="bg-[#002366] text-white font-bold text-xs px-5 py-2.5 rounded-xl">ठीक है (OK)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Next Month Carry-Forward Confirmation Modal -->
+  <div id="carry-modal" class="no-print fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 text-slate-900">
+      <h3 class="font-extrabold text-base text-[#002366]">Next Month Carry Forward?</h3>
+      <p class="mt-2 text-xs sm:text-sm text-slate-600">
+        इस माह का <strong>Next Month Balance (Qty & Rate)</strong> अगले माह के <strong>Last Month Balance</strong> में शिफ्ट हो जाएगा और Received / Consume Ration कॉलम अगले माह की एंट्री के लिए 0 हो जाएंगे।
+      </p>
+      <div class="mt-5 flex items-center justify-end gap-2">
+        <button onclick="closeModal('carry-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Cancel</button>
+        <button onclick="executeCarryForward()" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#003399] text-white hover:bg-blue-800">Yes, Shift to Next Month</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reset Sample Data Confirmation Modal -->
+  <div id="reset-modal" class="no-print fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 shadow-2xl border border-slate-200 text-slate-900">
+      <h3 class="font-extrabold text-base heading-red">Reset to Default Sample?</h3>
+      <p class="mt-2 text-xs sm:text-sm text-slate-600">
+        क्या आप सभी आइटम्स को डिफ़ॉल्ट 9 राशन आइटम्स (Atta से Salt तक) पर रीसेट करना चाहते हैं?
+      </p>
+      <div class="mt-5 flex items-center justify-end gap-2">
+        <button onclick="closeModal('reset-modal')" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">Cancel</button>
+        <button onclick="executeResetSample()" class="px-4 py-2 rounded-xl text-xs font-bold bg-[#CC0000] text-white hover:bg-red-700">Yes, Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. DYNAMIC PWA MANIFEST (ORIENTATION: "any"), CUSTOM APP ICON & OFFLINE SW
+    // =========================================================================
+    let deferredInstallPrompt = null;
+
+    function generateAppIconDataURL(size = 512, customLogoDataUrl = null) {
+      return new Promise((resolve) => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+
+        // Pure crisp white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+
+        if (customLogoDataUrl) {
+          const img = new Image();
+          img.onload = () => {
+            // Draw the user's chosen logo cleanly centered with slight safe padding for adaptive maskable icons
+            const pad = size * 0.1;
+            const avail = size - pad * 2;
+            const scale = Math.min(avail / img.width, avail / img.height);
+            const drawW = img.width * scale;
+            const drawH = img.height * scale;
+            const offsetX = (size - drawW) / 2;
+            const offsetY = (size - drawH) / 2;
+            ctx.drawImage(img, offsetX, offsetY, drawW, drawH);
+            resolve(canvas.toDataURL('image/png'));
+          };
+          img.onerror = () => {
+            drawFallbackIcon(ctx, size);
+            resolve(canvas.toDataURL('image/png'));
+          };
+          img.src = customLogoDataUrl;
+        } else {
+          drawFallbackIcon(ctx, size);
+          resolve(canvas.toDataURL('image/png'));
+        }
+      });
+    }
+
+    function drawFallbackIcon(ctx, size) {
+      ctx.strokeStyle = '#003399';
+      ctx.lineWidth = size * 0.035;
+      ctx.strokeRect(size * 0.05, size * 0.05, size * 0.90, size * 0.90);
+
+      ctx.strokeStyle = '#CC0000';
+      ctx.lineWidth = size * 0.015;
+      ctx.strokeRect(size * 0.09, size * 0.09, size * 0.82, size * 0.82);
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#CC0000';
+      ctx.font = `900 ${Math.round(size * 0.21)}px "Noto Sans Devanagari", Arial, sans-serif`;
+      ctx.fillText('प्रहरी', size / 2, size * 0.36);
+      ctx.fillText('मेस', size / 2, size * 0.59);
+
+      ctx.fillStyle = '#003399';
+      ctx.font = `800 ${Math.round(size * 0.07)}px Arial, sans-serif`;
+      ctx.fillText('E COY • 120 BN BSF', size / 2, size * 0.80);
+    }
+
+    function updateTopbarIconPreview() {
+      const previewEl = document.getElementById('topbar-icon-preview');
+      if (!previewEl) return;
+      const chosenIcon = appState?.appIcon || appState?.logos?.left || '';
+      if (chosenIcon) {
+        previewEl.innerHTML = `<img src="${chosenIcon}" alt="App Icon" class="w-full h-full object-contain p-0.5" />`;
+      } else {
+        previewEl.textContent = 'मेस';
+      }
+    }
+
+    async function updatePWAManifestAndIcons() {
+      try {
+        updateTopbarIconPreview();
+        const chosenLogo = appState?.appIcon || appState?.logos?.left || null;
+        const icon192 = await generateAppIconDataURL(192, chosenLogo);
+        const icon512 = await generateAppIconDataURL(512, chosenLogo);
+
+        const appleIconEl = document.getElementById('apple-touch-icon');
+        if (appleIconEl) appleIconEl.href = icon192;
+
+        const faviconEl = document.getElementById('dynamic-favicon');
+        if (faviconEl) faviconEl.href = icon192;
+
+        // orientation: "any" ensures phone screen opens naturally in portrait without auto-rotating into landscape
+        const manifestObj = {
+          name: 'प्रहरी मेस',
+          short_name: 'प्रहरी मेस',
+          description: 'Monthly Ration Summary & Register App for E Coy, 120 Bn BSF',
+          start_url: './',
+          display: 'standalone',
+          orientation: 'any',
+          background_color: '#ffffff',
+          theme_color: '#ffffff',
+          icons: [
+            { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }
+          ]
+        };
+
+        const manifestBlob = new Blob([JSON.stringify(manifestObj)], { type: 'application/json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        const manifestLink = document.getElementById('dynamic-manifest');
+        if (manifestLink) {
+          if (manifestLink.href && manifestLink.href.startsWith('blob:')) {
+            URL.revokeObjectURL(manifestLink.href);
+          }
+          manifestLink.href = manifestURL;
+        }
+      } catch (err) {}
+    }
+
+    function registerOfflineServiceWorker() {
+      if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || window.location.hostname === 'localhost')) {
+        const swCode = `
+          const CACHE_NAME = 'prahari-mess-offline-v9';
+          self.addEventListener('install', (event) => {
+            self.skipWaiting();
+            event.waitUntil(
+              caches.open(CACHE_NAME).then((cache) => {
+                return cache.addAll([self.location.origin + '/']).catch(() => {});
+              })
+            );
+          });
+          self.addEventListener('activate', (event) => {
+            event.waitUntil(clients.claim());
+          });
+          self.addEventListener('fetch', (event) => {
+            if (event.request.method !== 'GET') return;
+            event.respondWith(
+              caches.match(event.request).then((cachedResponse) => {
+                const networkFetch = fetch(event.request)
+                  .then((networkResponse) => {
+                    if (networkResponse && networkResponse.status === 200) {
+                      const copy = networkResponse.clone();
+                      caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
+                    }
+                    return networkResponse;
+                  })
+                  .catch(() => cachedResponse);
+                return cachedResponse || networkFetch;
+              })
+            );
+          });
+        `;
+        try {
+          const swBlob = new Blob([swCode], { type: 'application/javascript' });
+          const swUrl = URL.createObjectURL(swBlob);
+          navigator.serviceWorker.register(swUrl).catch(() => {});
+        } catch (err) {}
+      }
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredInstallPrompt = e;
+    });
+
+    async function triggerInstallApp() {
+      await updatePWAManifestAndIcons();
+      if (deferredInstallPrompt) {
+        deferredInstallPrompt.prompt();
+        const choice = await deferredInstallPrompt.userChoice;
+        if (choice && choice.outcome === 'accepted') {
+          showToast('प्रहरी मेस ऐप आपके चुने हुए आइकन के साथ Home Screen पर इंस्टॉल हो रहा है!');
+        }
+        deferredInstallPrompt = null;
+      } else {
+        document.getElementById('install-modal').classList.remove('hidden');
+      }
+    }
+
+    // =========================================================================
+    // 2. STATE MANAGEMENT, CUSTOM APP ICON, DUAL LOGOS & DEFAULT RATION ITEMS
+    // =========================================================================
+    const STORAGE_KEY = 'prahari_mess_bsf_120bn_v9';
+
+    function getDefaultMessState() {
+      return {
+        appIcon: '',
+        logos: {
+          left: '',
+          right: ''
+        },
+        meta: {
+          bsfLine: 'सीमा सुरक्षा बल / BORDER SECURITY FORCE',
+          banner: 'MESS SUMMARY OF MONTH 26.11.26 TO 25.12.26 E COY 120 BN BSF',
+          period: '26.11.2026 से 25.12.2026',
+          unit: 'E Coy, 120 Bn BSF',
+          location: 'Coy HQ'
+        },
+        items: [
+          { id: 1, particular: 'Atta (आटा)', au: 'Kgs', lastQty: 230, lastRate: 22, recQty: 230, recRate: 230, expQty: 23, expRate: 21 },
+          { id: 2, particular: 'Rice (चावल)', au: 'Kgs', lastQty: 250, lastRate: 38, recQty: 350, recRate: 38, expQty: 380, expRate: 38 },
+          { id: 3, particular: 'Dal Arhar (दाल अरहर)', au: 'Kgs', lastQty: 45, lastRate: 140, recQty: 60, recRate: 140, expQty: 70, expRate: 140 },
+          { id: 4, particular: 'Dal Chana (दाल चना)', au: 'Kgs', lastQty: 30, lastRate: 85, recQty: 50, recRate: 85, expQty: 55, expRate: 85 },
+          { id: 5, particular: 'Mustard Oil (सरसों तेल)', au: 'Ltr', lastQty: 40, lastRate: 145, recQty: 60, recRate: 145, expQty: 65, expRate: 145 },
+          { id: 6, particular: 'Refined Oil (रिफाइंड तेल)', au: 'Ltr', lastQty: 25, lastRate: 130, recQty: 40, recRate: 130, expQty: 45, expRate: 130 },
+          { id: 7, particular: 'Sugar (चीनी)', au: 'Kgs', lastQty: 50, lastRate: 44, recQty: 75, recRate: 44, expQty: 80, expRate: 44 },
+          { id: 8, particular: 'Tea (चाय पत्ती)', au: 'Kgs', lastQty: 10, lastRate: 280, recQty: 15, recRate: 280, expQty: 16, expRate: 280 },
+          { id: 9, particular: 'Salt (नमक)', au: 'Kgs', lastQty: 20, lastRate: 22, recQty: 30, recRate: 22, expQty: 32, expRate: 22 }
+        ]
+      };
+    }
+
+    let appState = loadSavedState();
+
+    function loadSavedState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.meta && Array.isArray(parsed.items)) {
+            if (!parsed.logos) parsed.logos = { left: '', right: '' };
+            if (typeof parsed.appIcon !== 'string') parsed.appIcon = '';
+            if (!parsed.meta.bsfLine) parsed.meta.bsfLine = 'सीमा सुरक्षा बल / BORDER SECURITY FORCE';
+            return parsed;
+          }
+        }
+      } catch (e) {}
+      return getDefaultMessState();
+    }
+
+    function persistState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+        const badge = document.getElementById('save-badge');
+        if (badge) {
+          badge.textContent = 'Saved ✓';
+          clearTimeout(window._saveBadgeTimer);
+          window._saveBadgeTimer = setTimeout(() => {
+            badge.textContent = 'Auto-Saved';
+          }, 1100);
+        }
+      } catch (e) {
+        showToast('Storage full: कृपया छोटा लोगो इमेज चुनें');
+      }
+    }
+
+    // =========================================================================
+    // 3. DEDICATED APP ICON UPLOAD & LEFT/RIGHT CUSTOM LOGO UPLOAD (90px x 90px)
+    // =========================================================================
+    function resizeImageFileToDataURL(file, maxDim = 512) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          const img = new Image();
+          img.onload = function () {
+            let w = img.width;
+            let h = img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) {
+                h = Math.round((h * maxDim) / w);
+                w = maxDim;
+              } else {
+                w = Math.round((w * maxDim) / h);
+                h = maxDim;
+              }
+            }
+            const canvas = document.createElement('canvas');
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/png'));
+          };
+          img.onerror = reject;
+          img.src = e.target.result;
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleAppIconUpload(inputEl) {
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+      try {
+        const dataUrl = await resizeImageFileToDataURL(file, 512);
+        appState.appIcon = dataUrl;
+        persistState();
+        await updatePWAManifestAndIcons();
+        showToast('Home Screen App Icon सेट हो गया! अब Install App दबाएं।');
+      } catch (e) {
+        showToast('इमेज लोड करने में त्रुटि हुई');
+      }
+      inputEl.value = '';
+    }
+
+    async function handleLogoUpload(side, inputEl) {
+      const file = inputEl.files && inputEl.files[0];
+      if (!file) return;
+      try {
+        const optimizedDataUrl = await resizeImageFileToDataURL(file, 360);
+        appState.logos[side] = optimizedDataUrl;
+        // Also sync App Icon if Left Logo is uploaded and no dedicated App Icon was chosen yet
+        if (side === 'left' && !appState.appIcon) {
+          appState.appIcon = optimizedDataUrl;
+        }
+        persistState();
+        renderCustomLogos();
+        await updatePWAManifestAndIcons();
+        showToast(side === 'left' ? 'Left Logo सेट हो गया!' : 'Right Logo सेट हो गया!');
+      } catch (e) {
+        showToast('इमेज लोड करने में त्रुटि हुई');
+      }
+      inputEl.value = '';
+    }
+
+    function removeCustomLogo(event, side) {
+      event.stopPropagation();
+      appState.logos[side] = '';
+      persistState();
+      renderCustomLogos();
+      updatePWAManifestAndIcons();
+      showToast(side === 'left' ? 'Left Logo हटा दिया गया' : 'Right Logo हटा दिया गया');
+    }
+
+    function renderCustomLogos() {
+      ['left', 'right'].forEach((side) => {
+        const dataUrl = appState.logos?.[side] || '';
+        const box = document.getElementById(`${side}-logo-box`);
+        const img = document.getElementById(`${side}-logo-img`);
+        const placeholder = document.getElementById(`${side}-logo-placeholder`);
+        const removeBtn = document.getElementById(`${side}-logo-remove`);
+
+        if (dataUrl) {
+          img.src = dataUrl;
+          img.classList.remove('hidden');
+          placeholder.classList.add('hidden');
+          removeBtn.classList.remove('hidden');
+          box.classList.remove('is-empty', 'border-dashed');
+          box.classList.add('border-transparent');
+        } else {
+          img.src = '';
+          img.classList.add('hidden');
+          placeholder.classList.remove('hidden');
+          removeBtn.classList.add('hidden');
+          box.classList.add('is-empty', 'border-dashed');
+          box.classList.remove('border-transparent');
+        }
+      });
+    }
+
+    // =========================================================================
+    // 4. AUTOMATIC REAL-TIME CALCULATION ENGINE
+    // =========================================================================
+    function parseNum(val) {
+      if (val === '' || val === null || val === undefined) return 0;
+      const n = parseFloat(val);
+      return isNaN(n) ? 0 : n;
+    }
+
+    function formatCurrency(val) {
+      return Number(val || 0).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function formatQty(val) {
+      return Number(val || 0).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function computeRowMetrics(item) {
+      const lQty = parseNum(item.lastQty);
+      const lRate = parseNum(item.lastRate);
+      const lAmt = lQty * lRate;
+
+      const rQty = parseNum(item.recQty);
+      const rRate = parseNum(item.recRate);
+      const rAmt = rQty * rRate;
+
+      const gtQty = lQty + rQty;
+      const gtAmt = lAmt + rAmt;
+
+      const eQty = parseNum(item.expQty);
+      const eRate = parseNum(item.expRate);
+      const eAmt = eQty * eRate;
+
+      const nQty = gtQty - eQty;
+      const nAmt = gtAmt - eAmt;
+      const nRate = nQty > 0 ? (nAmt / nQty) : 0;
+
+      return {
+        lQty, lRate, lAmt,
+        rQty, rRate, rAmt,
+        gtQty, gtAmt,
+        eQty, eRate, eAmt,
+        nQty, nRate, nAmt
+      };
+    }
+
+    function computeGrandTotals() {
+      let totLastQty = 0, totLastAmt = 0;
+      let totRecQty = 0, totRecAmt = 0;
+      let totGtQty = 0, totGtAmt = 0;
+      let totExpQty = 0, totExpAmt = 0;
+      let totNextQty = 0, totNextAmt = 0;
+
+      appState.items.forEach((item) => {
+        const m = computeRowMetrics(item);
+        totLastQty += m.lQty;
+        totLastAmt += m.lAmt;
+        totRecQty += m.rQty;
+        totRecAmt += m.rAmt;
+        totGtQty += m.gtQty;
+        totGtAmt += m.gtAmt;
+        totExpQty += m.eQty;
+        totExpAmt += m.eAmt;
+        totNextQty += m.nQty;
+        totNextAmt += m.nAmt;
+      });
+
+      return {
+        totLastQty, totLastAmt,
+        totRecQty, totRecAmt,
+        totGtQty, totGtAmt,
+        totExpQty, totExpAmt,
+        totNextQty, totNextAmt
+      };
+    }
+
+    // =========================================================================
+    // 5. DOM RENDERING (PURE WHITE CELLS, ROYAL BLUE WRITING, RED TOTAL AMOUNTS)
+    // =========================================================================
+    function renderFullRegister() {
+      renderCustomLogos();
+      updateTopbarIconPreview();
+      document.getElementById('meta-bsf-line').value = appState.meta.bsfLine || 'सीमा सुरक्षा बल / BORDER SECURITY FORCE';
+      document.getElementById('meta-banner').value = appState.meta.banner || '';
+      document.getElementById('meta-period').value = appState.meta.period || '';
+      document.getElementById('meta-unit').value = appState.meta.unit || '';
+      document.getElementById('meta-location').value = appState.meta.location || '';
+
+      renderTableBody();
+      renderTableFooterAndMonthlySummary();
+    }
+
+    function renderTableBody() {
+      const tbody = document.getElementById('ration-tbody');
+      tbody.innerHTML = '';
+
+      appState.items.forEach((item, idx) => {
+        const m = computeRowMetrics(item);
+        const tr = document.createElement('tr');
+        tr.className = 'writing-blue bg-white';
+
+        tr.innerHTML = `
+          <!-- 1. Sl. No. -->
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-1.5 text-center font-extrabold text-[13.5px] writing-blue bg-white align-middle">${idx + 1}</td>
+
+          <!-- 2. Particular -->
+          <td class="border-[1.5px] border-[#003399] p-1 bg-white align-middle">
+            <input type="text" value="${escapeAttr(item.particular)}" placeholder="Item Name..."
+              oninput="handleFieldChange(${idx}, 'particular', this.value)"
+              class="w-full bg-white border border-slate-300 focus:border-[#003399] rounded px-1.5 py-1 font-bold text-[13px] writing-blue focus:outline-none" />
+          </td>
+
+          <!-- 3. A/U -->
+          <td class="border-[1.5px] border-[#003399] p-1 bg-white align-middle">
+            <input type="text" value="${escapeAttr(item.au || 'Kgs')}" placeholder="Kgs"
+              oninput="handleFieldChange(${idx}, 'au', this.value)"
+              class="w-full bg-white border border-slate-300 focus:border-[#003399] rounded px-1 py-1 text-center font-semibold writing-blue focus:outline-none" />
+          </td>
+
+          <!-- 4-6. Last Month Balance: Qty, Rate, Amt -->
+          <td class="border-[1.5px] border-[#003399] p-1 bg-white align-middle">
+            <input type="number" step="any" value="${item.lastQty}" placeholder="0"
+              oninput="handleFieldChange(${idx}, 'lastQty', this.value)"
+              class="w-full bg-white border border-slate-300 focus:border-[#003399] rounded px-1 py-1 text-right font-semibold writing-blue focus:outline-none" />
+          </td>
+          <td class="border-[1.5px] border-[#003399] p-1 bg-white align-middle">
+            <input type="number" step="any" value="${item.lastRate}" placeholder="0"
+              oninput="handleFieldChange(${idx}, 'lastRate', this.value)"
+              class="w-full bg-white border border-slate-300 focus:border-[#003399] rounded px-1 py-1 text-right font-semibold writing-blue focus:outline-none" />
+          </td>
+          <td id="cell-${idx}-lAmt" class="border-[1.5px] border-[#003399] px-1.5 py-1.5 text-right font-bold writing-blue bg-white align-middle whitespace-nowrap">${formatCurrency(m.lAmt)}</td>
+
+          <!-- 7-9. Received Ration: Qty, Rate, Amt -->
+          <td class="border-[1.5px] border-[#003399] p-1 bg-white align-middle">
+            <input type="number" step="any" value="${item.recQty}" placeholder="0"
+              oninput="handleFieldChange(${idx}, 'recQty', this.value)"
+              class="w-full bg-white border border-slate-300 focus:border-[#003399] rounded px-1 py-1 text-right font-semibold writing-blue focus:outline-none" />
+          </td>
+          <td class="border-[1.5px] border-[#003399] p-1 bg-white align-middle">
+            <input type="number" step="any" value="${item.recRate}" placeholder="0"
+              oninput="handleFieldChange(${idx}, 'recRate', this.value)"
+              class="w-full bg-white border border-slate-300 focus:border-[#003399] rounded px-1 py-1 text-right font-semibold writing-blue focus:outline-none" />
+          </td>
+          <td id="cell-${idx}-rAmt" class="border-[1.5px] border-[#003399] px-1.5 py-1.5 text-right font-bold writing-blue bg-white align-middle whitespace-nowrap">${formatCurrency(m.rAmt)}</td>
+
+          <!-- 10-11. Grand Total: Qty, Amt -->
+          <td id="cell-${idx}-gtQty" class="border-[1.5px] border-[#003399] px-1.5 py-1.5 text-right font-extrabold writing-blue bg-white align-middle whitespace-nowrap">${formatQty(m.gtQty)}</td>
+          <td id="cell-${idx}-gtAmt" class="border-[1.5px] border-[#003399] px-1.5 py-1.5 text-right font-extrabold writing-blue bg-white align-middle whitespace-nowrap">${formatCurrency(m.gtAmt)}</td>
+
+          <!-- 12-14. Consume Ration: Qty, Rate, Amt -->
+          <td class="border-[1.5px] border-[#003399] p-1 bg-white align-middle">
+            <input type="number" step="any" value="${item.expQty}" placeholder="0"
+              oninput="handleFieldChange(${idx}, 'expQty', this.value)"
+              class="w-full bg-white border border-slate-300 focus:border-[#003399] rounded px-1 py-1 text-right font-semibold writing-blue focus:outline-none" />
+          </td>
+          <td class="border-[1.5px] border-[#003399] p-1 bg-white align-middle">
+            <input type="number" step="any" value="${item.expRate}" placeholder="0"
+              oninput="handleFieldChange(${idx}, 'expRate', this.value)"
+              class="w-full bg-white border border-slate-300 focus:border-[#003399] rounded px-1 py-1 text-right font-semibold writing-blue focus:outline-none" />
+          </td>
+          <td id="cell-${idx}-eAmt" class="border-[1.5px] border-[#003399] px-1.5 py-1.5 text-right font-bold writing-blue bg-white align-middle whitespace-nowrap">${formatCurrency(m.eAmt)}</td>
+
+          <!-- 15-17. Next Month Balance: Qty, Rate, Amt -->
+          <td id="cell-${idx}-nQty" class="border-[1.5px] border-[#003399] px-1.5 py-1.5 text-right font-extrabold writing-blue bg-white align-middle whitespace-nowrap">${formatQty(m.nQty)}</td>
+          <td id="cell-${idx}-nRate" class="border-[1.5px] border-[#003399] px-1.5 py-1.5 text-right font-bold writing-blue bg-white align-middle whitespace-nowrap">${formatCurrency(m.nRate)}</td>
+          <td id="cell-${idx}-nAmt" class="border-[1.5px] border-[#003399] px-1.5 py-1.5 text-right font-extrabold writing-blue bg-white align-middle whitespace-nowrap">${formatCurrency(m.nAmt)}</td>
+
+          <!-- 18. Delete Column (Screen-Only Trash SVG Icon) -->
+          <td class="no-print border-[1.5px] border-[#003399] px-1 py-1 text-center bg-white align-middle">
+            <button onclick="deleteRationRow(${idx})" title="Delete Item" aria-label="Delete Item"
+              class="inline-flex items-center justify-center text-[#CC0000] hover:text-red-800 hover:bg-red-50 p-1.5 rounded-lg transition active:scale-90">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function updateSingleRowDOM(idx) {
+      const m = computeRowMetrics(appState.items[idx]);
+      const setCell = (id, text) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      };
+      setCell(`cell-${idx}-lAmt`, formatCurrency(m.lAmt));
+      setCell(`cell-${idx}-rAmt`, formatCurrency(m.rAmt));
+      setCell(`cell-${idx}-gtQty`, formatQty(m.gtQty));
+      setCell(`cell-${idx}-gtAmt`, formatCurrency(m.gtAmt));
+      setCell(`cell-${idx}-eAmt`, formatCurrency(m.eAmt));
+      setCell(`cell-${idx}-nQty`, formatQty(m.nQty));
+      setCell(`cell-${idx}-nRate`, formatCurrency(m.nRate));
+      setCell(`cell-${idx}-nAmt`, formatCurrency(m.nAmt));
+    }
+
+    function renderTableFooterAndMonthlySummary() {
+      const t = computeGrandTotals();
+      const tfoot = document.getElementById('ration-tfoot');
+      // All Rate cells in TOTAL row (including Next Month Balance Rate) remain completely blank
+      tfoot.innerHTML = `
+        <tr class="font-black text-[13px] bg-white">
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-center writing-blue bg-white align-middle"></td>
+          <td class="border-[1.5px] border-[#003399] px-2.5 py-2 text-left uppercase tracking-wide writing-blue bg-white align-middle">TOTAL</td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-center writing-blue bg-white align-middle"></td>
+
+          <!-- Last Month Totals -->
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right writing-blue bg-white align-middle whitespace-nowrap">${formatQty(t.totLastQty)}</td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right writing-blue bg-white align-middle"></td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right total-red font-black bg-white align-middle whitespace-nowrap">${formatCurrency(t.totLastAmt)}</td>
+
+          <!-- Received Totals -->
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right writing-blue bg-white align-middle whitespace-nowrap">${formatQty(t.totRecQty)}</td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right writing-blue bg-white align-middle"></td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right total-red font-black bg-white align-middle whitespace-nowrap">${formatCurrency(t.totRecAmt)}</td>
+
+          <!-- Grand Totals -->
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right writing-blue bg-white align-middle whitespace-nowrap">${formatQty(t.totGtQty)}</td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right total-red font-black bg-white align-middle whitespace-nowrap">${formatCurrency(t.totGtAmt)}</td>
+
+          <!-- Consume Totals -->
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right writing-blue bg-white align-middle whitespace-nowrap">${formatQty(t.totExpQty)}</td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right writing-blue bg-white align-middle"></td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right total-red font-black bg-white align-middle whitespace-nowrap">${formatCurrency(t.totExpAmt)}</td>
+
+          <!-- Next Month Totals -->
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right writing-blue bg-white align-middle whitespace-nowrap">${formatQty(t.totNextQty)}</td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right writing-blue bg-white align-middle"></td>
+          <td class="border-[1.5px] border-[#003399] px-1.5 py-2 text-right total-red font-black bg-white align-middle whitespace-nowrap">${formatCurrency(t.totNextAmt)}</td>
+
+          <td class="no-print border-[1.5px] border-[#003399] bg-white"></td>
+        </tr>
+      `;
+
+      // Update 1-to-6 Monthly Summary Box (All Amounts in Bold Red #CC0000)
+      const setSum = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = formatCurrency(val);
+      };
+      setSum('sum-1-last', t.totLastAmt);
+      setSum('sum-2-rec', t.totRecAmt);
+      setSum('sum-3-gt', t.totGtAmt);
+      setSum('sum-4-exp', t.totExpAmt);
+      setSum('sum-5-next', t.totNextAmt);
+      setSum('sum-6-final', t.totNextAmt);
+    }
+
+    // =========================================================================
+    // 6. USER INTERACTIONS & NEXT MONTH CARRY FORWARD
+    // =========================================================================
+    function updateMeta(key, value) {
+      appState.meta[key] = value;
+      persistState();
+    }
+
+    function handleFieldChange(idx, field, value) {
+      appState.items[idx][field] = value;
+      updateSingleRowDOM(idx);
+      renderTableFooterAndMonthlySummary();
+      persistState();
+    }
+
+    function addNewRationRow() {
+      const nextNum = appState.items.length + 1;
+      appState.items.push({
+        id: Date.now(),
+        particular: `Item ${nextNum}`,
+        au: 'Kgs',
+        lastQty: '',
+        lastRate: '',
+        recQty: '',
+        recRate: '',
+        expQty: '',
+        expRate: ''
+      });
+      persistState();
+      renderFullRegister();
+      showToast('नया राशन आइटम जोड़ा गया');
+    }
+
+    function deleteRationRow(idx) {
+      if (appState.items.length <= 1) {
+        showToast('कम से कम एक आइटम होना ज़रूरी है');
+        return;
+      }
+      appState.items.splice(idx, 1);
+      persistState();
+      renderFullRegister();
+      showToast('राशन आइटम हटा दिया गया');
+    }
+
+    function openCarryForwardModal() {
+      document.getElementById('carry-modal').classList.remove('hidden');
+    }
+
+    function openResetModal() {
+      document.getElementById('reset-modal').classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function executeCarryForward() {
+      appState.items = appState.items.map((item) => {
+        const m = computeRowMetrics(item);
+        const carryQty = m.nQty > 0 ? Number(m.nQty.toFixed(2)) : 0;
+        const carryRate = m.nRate > 0 ? Number(m.nRate.toFixed(2)) : 0;
+        return {
+          ...item,
+          lastQty: carryQty,
+          lastRate: carryRate,
+          recQty: 0,
+          recRate: 0,
+          expQty: 0,
+          expRate: carryRate
+        };
+      });
+      persistState();
+      renderFullRegister();
+      closeModal('carry-modal');
+      showToast('Next Month Balance को Last Month Balance में शिफ्ट कर दिया गया!');
+    }
+
+    function executeResetSample() {
+      const preservedLogos = { ...appState.logos };
+      const preservedAppIcon = appState.appIcon || '';
+      appState = getDefaultMessState();
+      appState.logos = preservedLogos;
+      appState.appIcon = preservedAppIcon;
+      persistState();
+      renderFullRegister();
+      closeModal('reset-modal');
+      showToast('डिफ़ॉल्ट 9 राशन आइटम्स लोड कर दिए गए');
+    }
+
+    // =========================================================================
+    // 7. FULL-PAGE EDGE-TO-EDGE A4 LANDSCAPE PRINT & PDF ENGINE
+    // =========================================================================
+    async function exportA4LandscapePDFAndPrint() {
+      const btn = document.getElementById('print-pdf-btn');
+      const prevBtnHTML = btn.innerHTML;
+      btn.innerHTML = '<span>⏳ Generating PDF...</span>';
+      btn.disabled = true;
+
+      const sheetEl = document.getElementById('register-sheet');
+      const pdfFileName = 'Prahari_Mess_Summary.pdf';
+
+      let offscreenHost = null;
+
+      try {
+        // Off-screen 1360px wide pure #FFFFFF print container with 4px 6px padding for Full-Page Edge-to-Edge A4 Landscape
+        offscreenHost = document.createElement('div');
+        offscreenHost.id = 'printRenderHost';
+        offscreenHost.style.position = 'fixed';
+        offscreenHost.style.left = '-16000px';
+        offscreenHost.style.top = '0';
+        offscreenHost.style.width = '1360px';
+        offscreenHost.style.padding = '4px 6px';
+        offscreenHost.style.boxSizing = 'border-box';
+        offscreenHost.style.background = '#ffffff';
+        offscreenHost.style.zIndex = '-1';
+
+        const clone = sheetEl.cloneNode(true);
+        clone.id = 'printSheetClone';
+        clone.style.width = '100%';
+        clone.style.maxWidth = '100%';
+        clone.style.padding = '0';
+        clone.style.margin = '0';
+        clone.style.border = 'none';
+        clone.style.boxShadow = 'none';
+        clone.style.borderRadius = '0';
+        clone.style.background = '#ffffff';
+        clone.style.boxSizing = 'border-box';
+
+        // Remove screen-only elements (helper bars, delete column, remove buttons, file inputs)
+        clone.querySelectorAll('.no-print').forEach((el) => el.remove());
+
+        // Handle Left & Right custom logo boxes (90px x 90px; completely hidden if empty)
+        ['left', 'right'].forEach((side) => {
+          const slot = clone.querySelector(`#${side}-logo-box`);
+          const hasLogo = Boolean(appState.logos && appState.logos[side]);
+          if (slot) {
+            slot.style.width = '90px';
+            slot.style.height = '90px';
+            slot.style.border = 'none';
+            slot.style.background = 'transparent';
+            if (!hasLogo) {
+              slot.style.visibility = 'hidden';
+            }
+          }
+        });
+
+        // Main Title 'प्रहरी मेस': 56px Extra-Bold Red, line-height 1.42 and top padding 10px so Devanagari matras never clip
+        const mainTitle = clone.querySelector('#main-prahari-title');
+        if (mainTitle) {
+          mainTitle.style.fontSize = '56px';
+          mainTitle.style.fontWeight = '900';
+          mainTitle.style.color = '#cc0000';
+          mainTitle.style.lineHeight = '1.42';
+          mainTitle.style.paddingTop = '10px';
+          mainTitle.style.paddingBottom = '2px';
+          mainTitle.style.margin = '0';
+          mainTitle.style.borderTop = 'none';
+        }
+
+        // Force 3-column metadata row side-by-side in ExtraBold Red (#CC0000, 18px)
+        const metaGrid = clone.querySelector('#header-meta-grid');
+        if (metaGrid) {
+          metaGrid.style.display = 'grid';
+          metaGrid.style.gridTemplateColumns = '1.2fr 1fr 0.8fr';
+          metaGrid.style.background = '#ffffff';
+          metaGrid.style.fontSize = '18px';
+          metaGrid.style.fontWeight = '800';
+          metaGrid.style.paddingTop = '6px';
+          metaGrid.style.paddingBottom = '8px';
+        }
+
+        // Replace all <input> fields with crisp static text spans
+        clone.querySelectorAll('input').forEach((inp) => {
+          if (inp.type === 'file') {
+            inp.remove();
+            return;
+          }
+          const span = document.createElement('span');
+          span.textContent = inp.value || '';
+          span.style.display = 'inline-block';
+
+          if (inp.id === 'meta-bsf-line') {
+            span.style.color = '#cc0000';
+            span.style.width = '100%';
+            span.style.textAlign = 'center';
+            span.style.fontSize = '22px';
+            span.style.fontWeight = '800';
+            span.style.letterSpacing = '0.5px';
+            span.style.marginTop = '4px';
+          } else if (inp.id === 'meta-banner') {
+            span.style.color = '#cc0000';
+            span.style.width = '100%';
+            span.style.textAlign = 'center';
+            span.style.fontSize = '26px';
+            span.style.fontWeight = '900';
+            span.style.letterSpacing = '0.5px';
+            span.style.lineHeight = '1.25';
+          } else if (inp.id === 'meta-period') {
+            span.style.color = '#cc0000';
+            span.style.fontSize = '18px';
+            span.style.fontWeight = '800';
+            span.style.textAlign = 'left';
+          } else if (inp.id === 'meta-unit') {
+            span.style.color = '#cc0000';
+            span.style.fontSize = '18px';
+            span.style.fontWeight = '800';
+            span.style.textAlign = 'center';
+          } else if (inp.id === 'meta-location') {
+            span.style.color = '#cc0000';
+            span.style.fontSize = '18px';
+            span.style.fontWeight = '800';
+            span.style.textAlign = 'right';
+          } else {
+            span.style.color = '#003399';
+            span.style.width = '100%';
+            span.style.fontSize = '13px';
+            span.style.fontWeight = inp.classList.contains('font-bold') ? '700' : '600';
+            span.style.wordBreak = 'normal';
+            span.style.overflowWrap = 'break-word';
+            span.style.textAlign = inp.classList.contains('text-right')
+              ? 'right'
+              : inp.classList.contains('text-center')
+                ? 'center'
+                : 'left';
+          }
+          inp.parentNode.replaceChild(span, inp);
+        });
+
+        // Clean 2-row thead + border-collapse: separate so 'Sl. No.', 'Particular', 'A/U' & borders render 100% crisply
+        const table = clone.querySelector('#prahari-register-table');
+        if (table) {
+          table.style.width = '100%';
+          table.style.tableLayout = 'fixed';
+          table.style.borderCollapse = 'separate';
+          table.style.borderSpacing = '0';
+          table.style.borderTop = '1.5px solid #003399';
+          table.style.borderLeft = '1.5px solid #003399';
+          table.style.borderRight = 'none';
+          table.style.borderBottom = 'none';
+          table.style.margin = '0';
+          table.style.background = '#ffffff';
+          table.style.boxSizing = 'border-box';
+
+          const printColWidths = [
+            '4.5%',  // 1. Sl. No.
+            '16.5%', // 2. Particular
+            '4.5%',  // 3. A/U
+            '4.8%',  // 4. Last Qty
+            '4.5%',  // 5. Last Rate
+            '6.3%',  // 6. Last Amt
+            '4.8%',  // 7. Rec Qty
+            '4.5%',  // 8. Rec Rate
+            '6.3%',  // 9. Rec Amt
+            '5.0%',  // 10. Grand Total Qty
+            '6.5%',  // 11. Grand Total Amt
+            '4.8%',  // 12. Consume Qty
+            '4.5%',  // 13. Consume Rate
+            '6.3%',  // 14. Consume Amt
+            '5.0%',  // 15. Next Qty
+            '4.7%',  // 16. Next Rate
+            '6.5%'   // 17. Next Amt
+          ];
+
+          const colgroup = document.createElement('colgroup');
+          printColWidths.forEach((w) => {
+            const col = document.createElement('col');
+            col.style.width = w;
+            colgroup.appendChild(col);
+          });
+          table.insertBefore(colgroup, table.firstChild);
+
+          const oldThead = table.querySelector('thead');
+          const newThead = document.createElement('thead');
+
+          const makePrintTh = ({ text, colspan = 1, align = 'center', fontSize = '14.5px', padding = '7px 3px', bottomBorder = true, nowrap = true }) => {
+            const th = document.createElement('th');
+            if (colspan > 1) th.colSpan = colspan;
+            th.textContent = text;
+            th.style.background = '#ffffff';
+            th.style.color = '#cc0000';
+            th.style.fontWeight = '900';
+            th.style.fontSize = fontSize;
+            th.style.textAlign = align;
+            th.style.padding = padding;
+            th.style.verticalAlign = 'middle';
+            th.style.lineHeight = '1.25';
+            th.style.boxSizing = 'border-box';
+            th.style.borderTop = 'none';
+            th.style.borderLeft = 'none';
+            th.style.borderRight = '1.5px solid #003399';
+            th.style.borderBottom = bottomBorder ? '1.5px solid #003399' : 'none';
+            if (nowrap) th.style.whiteSpace = 'nowrap';
+            return th;
+          };
+
+          const tr1 = document.createElement('tr');
+          tr1.appendChild(makePrintTh({ text: 'Sl. No.', align: 'center', fontSize: '14.5px', padding: '8px 2px 2px 2px', bottomBorder: false }));
+          tr1.appendChild(makePrintTh({ text: 'Particular', align: 'left', fontSize: '15.5px', padding: '8px 6px 2px 6px', bottomBorder: false }));
+          tr1.appendChild(makePrintTh({ text: 'A/U', align: 'center', fontSize: '14.5px', padding: '8px 2px 2px 2px', bottomBorder: false }));
+          tr1.appendChild(makePrintTh({ text: 'Last Month Balance', colspan: 3, align: 'center', fontSize: '14.5px', padding: '6px 3px', bottomBorder: true }));
+          tr1.appendChild(makePrintTh({ text: 'Received Ration', colspan: 3, align: 'center', fontSize: '14.5px', padding: '6px 3px', bottomBorder: true }));
+          tr1.appendChild(makePrintTh({ text: 'Grand Total', colspan: 2, align: 'center', fontSize: '14.5px', padding: '6px 3px', bottomBorder: true }));
+          tr1.appendChild(makePrintTh({ text: 'Consume Ration', colspan: 3, align: 'center', fontSize: '14.5px', padding: '6px 3px', bottomBorder: true }));
+          tr1.appendChild(makePrintTh({ text: 'Next Month Balance', colspan: 3, align: 'center', fontSize: '14.5px', padding: '6px 3px', bottomBorder: true }));
+          newThead.appendChild(tr1);
+
+          const tr2 = document.createElement('tr');
+          tr2.appendChild(makePrintTh({ text: '', align: 'center', fontSize: '13.5px', padding: '2px 2px 6px 2px', bottomBorder: true }));
+          tr2.appendChild(makePrintTh({ text: '', align: 'left', fontSize: '13.5px', padding: '2px 6px 6px 6px', bottomBorder: true }));
+          tr2.appendChild(makePrintTh({ text: '', align: 'center', fontSize: '13.5px', padding: '2px 2px 6px 2px', bottomBorder: true }));
+
+          const subHeaders = [
+            'Qty', 'Rate', 'Amt',
+            'Qty', 'Rate', 'Amt',
+            'Qty', 'Amt',
+            'Qty', 'Rate', 'Amt',
+            'Qty', 'Rate', 'Amt'
+          ];
+          subHeaders.forEach((label) => {
+            tr2.appendChild(makePrintTh({ text: label, align: 'center', fontSize: '13.5px', padding: '5px 2px', bottomBorder: true }));
+          });
+          newThead.appendChild(tr2);
+
+          if (oldThead && oldThead.parentNode) {
+            oldThead.parentNode.replaceChild(newThead, oldThead);
+          }
+
+          table.querySelectorAll('tbody td, tfoot td').forEach((cell) => {
+            cell.style.minWidth = '0';
+            cell.style.width = 'auto';
+            cell.style.boxSizing = 'border-box';
+            cell.style.background = '#ffffff';
+            cell.style.borderTop = 'none';
+            cell.style.borderLeft = 'none';
+            cell.style.borderRight = '1.5px solid #003399';
+            cell.style.borderBottom = '1.5px solid #003399';
+            cell.style.fontSize = '12.5px';
+            cell.style.padding = '5px 4px';
+            cell.style.verticalAlign = 'middle';
+            cell.style.whiteSpace = 'nowrap';
+          });
+
+          table.querySelectorAll('tbody tr').forEach((tr) => {
+            const tds = tr.querySelectorAll('td');
+            if (tds[0]) {
+              tds[0].style.fontSize = '13.5px';
+              tds[0].style.fontWeight = '800';
+              tds[0].style.textAlign = 'center';
+              tds[0].style.padding = '5px 3px';
+              tds[0].style.whiteSpace = 'nowrap';
+            }
+            if (tds[1]) {
+              tds[1].style.fontSize = '13.5px';
+              tds[1].style.fontWeight = '700';
+              tds[1].style.whiteSpace = 'normal';
+              tds[1].style.wordBreak = 'normal';
+              tds[1].style.overflowWrap = 'break-word';
+              tds[1].style.textAlign = 'left';
+              tds[1].style.padding = '5px 6px';
+            }
+          });
+        }
+
+        const summaryTable = clone.querySelector('#monthly-summary-table');
+        if (summaryTable) {
+          summaryTable.style.borderCollapse = 'separate';
+          summaryTable.style.borderSpacing = '0';
+          summaryTable.style.borderTop = '1.5px solid #003399';
+          summaryTable.style.borderLeft = '1.5px solid #003399';
+          summaryTable.style.borderRight = 'none';
+          summaryTable.style.borderBottom = 'none';
+          summaryTable.querySelectorAll('td').forEach((td) => {
+            td.style.borderTop = 'none';
+            td.style.borderLeft = 'none';
+            td.style.borderRight = '1.5px solid #003399';
+            td.style.borderBottom = '1.5px solid #003399';
+            td.style.fontSize = '14px';
+            td.style.background = '#ffffff';
+          });
+        }
+
+        const sigGrid = clone.querySelector('#signatures-grid');
+        if (sigGrid) {
+          sigGrid.style.display = 'grid';
+          sigGrid.style.gridTemplateColumns = 'repeat(3, minmax(0, 1fr))';
+          sigGrid.style.gap = '28px';
+          sigGrid.style.background = '#ffffff';
+        }
+
+        offscreenHost.appendChild(clone);
+        document.body.appendChild(offscreenHost);
+
+        await new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+
+        if (typeof html2canvas !== 'undefined' && window.jspdf && window.jspdf.jsPDF) {
+          const captureWidth = offscreenHost.scrollWidth || 1360;
+          const captureHeight = offscreenHost.scrollHeight;
+
+          const canvas = await html2canvas(offscreenHost, {
+            scale: 2,
+            width: captureWidth,
+            height: captureHeight,
+            windowWidth: captureWidth,
+            scrollX: 0,
+            scrollY: 0,
+            backgroundColor: '#ffffff',
+            useCORS: true,
+            logging: false
+          });
+
+          document.body.removeChild(offscreenHost);
+          offscreenHost = null;
+
+          const imgData = canvas.toDataURL('image/png');
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF({
+            orientation: 'landscape',
+            unit: 'mm',
+            format: 'a4'
+          });
+
+          // Full-Page Edge-to-Edge A4 Landscape (297mm x 210mm) with 2.5mm L/R & 3mm T/B margins
+          const pageW = 297;
+          const pageH = 210;
+          const marginLR = 2.5;
+          const marginTB = 3;
+          const usableWidth = pageW - marginLR * 2;  // 292mm
+          const usableHeight = pageH - marginTB * 2; // 204mm
+
+          let finalW = usableWidth;
+          let finalH = (canvas.height * usableWidth) / canvas.width;
+          if (finalH > usableHeight) {
+            finalH = usableHeight;
+            finalW = (canvas.width * usableHeight) / canvas.height;
+          }
+
+          const offsetX = (pageW - finalW) / 2;
+          const offsetY = (pageH - finalH) / 2;
+
+          pdf.addImage(imgData, 'PNG', offsetX, offsetY, finalW, finalH);
+
+          // 1. Direct PDF download ('Prahari_Mess_Summary.pdf')
+          pdf.save(pdfFileName);
+
+          // 2. Open PDF print view (or fallback to in-app preview modal if popup blocked)
+          try {
+            const pdfBlob = pdf.output('blob');
+            const blobUrl = URL.createObjectURL(pdfBlob);
+            const printWindow = window.open(blobUrl, '_blank');
+            if (printWindow) {
+              printWindow.onload = function () {
+                try { printWindow.print(); } catch (e) {}
+              };
+            } else {
+              document.getElementById('pdf-preview-image').src = imgData;
+              document.getElementById('pdf-direct-download-link').href = blobUrl;
+              document.getElementById('pdf-preview-modal').classList.remove('hidden');
+            }
+          } catch (popupErr) {
+            document.getElementById('pdf-preview-image').src = imgData;
+            document.getElementById('pdf-preview-modal').classList.remove('hidden');
+          }
+
+          showToast('A4 Landscape PDF तैयार है! (' + pdfFileName + ')');
+        } else {
+          if (offscreenHost) {
+            document.body.removeChild(offscreenHost);
+            offscreenHost = null;
+          }
+          window.focus();
+          window.print();
+        }
+      } catch (err) {
+        if (offscreenHost && offscreenHost.parentNode) {
+          offscreenHost.parentNode.removeChild(offscreenHost);
+        }
+        try {
+          window.focus();
+          window.print();
+        } catch (printErr) {}
+        showToast('Print dialog खोला गया है');
+      } finally {
+        btn.innerHTML = prevBtnHTML;
+        btn.disabled = false;
+      }
+    }
+
+    // =========================================================================
+    // 8. HELPERS & INITIALIZATION
+    // =========================================================================
+    function showToast(message) {
+      const toast = document.getElementById('toast');
+      toast.textContent = message;
+      toast.classList.remove('hidden');
+      clearTimeout(window._toastTimeout);
+      window._toastTimeout = setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 3000);
+    }
+
+    function escapeAttr(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      registerOfflineServiceWorker();
+      renderFullRegister();
+      updatePWAManifestAndIcons();
+    });
+  </script>
+</body>
+</html>
